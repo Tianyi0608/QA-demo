@@ -1,0 +1,4 @@
+django>=2.0.2
+transformers==4.0.0
+requests>2.18
+pulp

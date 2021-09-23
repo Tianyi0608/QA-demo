@@ -1,0 +1,280 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+            integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+            crossorigin="anonymous"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Extractive QA with IDK</title>
+    {% csrf_token %}
+</head>
+<body>
+<style>
+    .loader {
+        border: 3px solid whitesmoke;
+        border-radius: 50%;
+        border-top: 3px solid black;
+        width: 40px;
+        height: 40px;
+        -webkit-animation: spin 1s linear infinite;
+        animation: spin 1s linear infinite;
+        margin-right: auto;
+        margin-left: auto;
+        position: absolute;
+        visibility: hidden;
+    }
+
+    @-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<div class="container">
+
+<!--    <div class="jumbotron jumbotron-fluid">-->
+<!--        <div class="container">-->
+<!--            <h1 class="display-4">Extractive QA with IDK</h1>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <br>
+
+    Enter a paragraph and a question which is related to the paragraph.
+    <br>
+    <br>
+
+    The paragraph:
+    <textarea id="inputA" type="text" aria-label="A" name="sent1" value="{{ sent1 }}" class="form-control" rows="5" cols="10" style="width: 100%"
+           placeholder="The paragraph.">{{sent1}}</textarea>
+    <br>
+    The question:
+    <input id="inputB" type="text" aria-label="B" name="sent2" value="{{ sent2 }}" class="form-control" style="width: 100%"
+           placeholder="The question related to the paragraph.">
+
+    <br>
+    <br>
+    Prediction Settings:
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="customradio1" value="1" name="group1"
+                {% if alg == "best" %} checked {% endif %}>
+        <label class="custom-control-label" for="customradio1">The Best Prediction</label>
+    </div>
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="customradio2" value="2" name="group1"
+                {% if alg == "topn" %} checked {% endif %}>
+        <label class="custom-control-label" for="customradio2">Top N Best Prediction</label>
+    </div>
+    <br>
+
+    <br>
+    Model Selection:
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="customradio3" value="3" name="group2"
+                {% if model == "squad2-better-bert-base" %} checked {% endif %}>
+	    <label class="custom-control-label" for="customradio3">squad2-better-bert-base</label>
+    </div>
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="customradio4" value="4" name="group2"
+                {% if model == "squad2-bert-base" %} checked {% endif %}>
+        <label class="custom-control-label" for="customradio4">squad2-bert-base</label>
+    </div>
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="customradio5" value="5" name="group2"
+                {% if model == "squad2-qamr-better-bert-large" %} checked {% endif %}>
+        <label class="custom-control-label" for="customradio5">squad2-qamr-better-bert-large</label>
+    </div>
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="customradio6" value="6" name="group2"
+                {% if model == "squad2-qamr-better-balanced-bert-large" %} checked {% endif %}>
+        <label class="custom-control-label" for="customradio6">squad2-qamr-better-balanced-bert-large</label>
+    </div>
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="customradio7" value="7" name="group2"
+                {% if model == "qamr-mbert-cased" %} checked {% endif %}>
+        <label class="custom-control-label" for="customradio7">qamr-mbert-cased</label>
+    </div>
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="customradio8" value="8" name="group2"
+                {% if model == "qamr-mbert-cased-pretrained" %} checked {% endif %}>
+        <label class="custom-control-label" for="customradio8">qamr-mbert-cased-pretrained</label>
+    </div>
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="customradio9" value="9" name="group2"
+                {% if model == "qamr-mbert-cased-pretrained-has-answer" %} checked {% endif %}>
+        <label class="custom-control-label" for="customradio9">qamr-mbert-cased-pretrained-has-answer</label>
+    </div>
+<!--    <div class="custom-control custom-radio">-->
+<!--        <input type="radio" class="custom-control-input" id="customradio10" value="10" name="group2"-->
+<!--                {% if model == "qamr-mbert-cased-pretrained-has-answer-1" %} checked {% endif %}>-->
+<!--        <label class="custom-control-label" for="customradio10">qamr-mbert-cased-pretrained-has-answer-1</label>-->
+<!--    </div>-->
+
+    <br>
+    <br>
+
+    <div style="text-align: center;">
+        <button class="btn btn-outline-success" type="button" id="button-run">Run!</button>
+        <button class="btn btn-outline-danger" type="button" id="button-clean">Clean!</button>
+    </div>
+    <br>
+<!--    <div id="loader_container" style="height: 55px; margin-left: 48%">-->
+<!--        <div class="loader" id="loader-main"></div>-->
+<!--    </div>-->
+<!--    {#<div class="alert alert-secondary" role="alert"  id="output">#}-->
+<!--    {% if nextSentence is not None %}-->
+<!--        <div class="alert alert-primary" role="alert">-->
+<!--            Is Next Sentence: <b color="green" ><font color="{{ nextSentence_color }}">{{ nextSentence }} ({{ nextSentence_score }})</font></b>-->
+<!--            v.s. {{ nextSentence_neg }} ({{ nextSentence_neg_score }})-->
+<!--        </div>-->
+<!--    {% endif %}-->
+    <div style="overflow-x: scroll; overflow-y: hidden;  border: 1px solid gray;">
+        <div style="white-space:nowrap;">
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    raw answers:
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in raw_table %}
+                    <tr>
+                        {% for t in row %}
+                            <td scope="row">{{ t }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    processed answers:
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in processed_table %}
+                    <tr>
+                        {% for t in row %}
+                            <td scope="row">{{ t }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br><br><br>
+    {#</div>#}
+
+</div>
+<script>
+    $('#button-clean').click(function () {
+        location.href = "";
+    });
+
+    $('#button-run').click(function () {
+        if ($('#inputA').val().trim() === "" || $('#inputB').val().trim() === "") {
+            $('#inputA').addClass("border-danger");
+            $('#inputB').addClass("border-danger");
+        } else {
+            var A = $('#inputA').val().trim();
+            var B = $('#inputB').val().trim();
+
+            if (A.length === 0) {
+                A = " "
+            }
+
+            var alg = "best";
+            if ($("#customradio1").is(":checked")) {
+                alg = "best"
+            }
+            if ($("#customradio2").is(":checked")) {
+                alg = "topn"
+            }
+
+            var model = "squad2-better-bert-base";
+            if ($("#customradio3").is(":checked")) {
+                model = "squad2-better-bert-base"
+            }
+            if ($("#customradio4").is(":checked")) {
+                model = "squad2-bert-base"
+            }
+            if ($("#customradio5").is(":checked")) {
+                model = "squad2-qamr-better-bert-large"
+            }
+            if ($("#customradio6").is(":checked")) {
+                model = "squad2-qamr-better-balanced-bert-large"
+            }
+            if ($("#customradio7").is(":checked")) {
+                model = "qamr-mbert-cased"
+            }
+            if ($("#customradio8").is(":checked")) {
+                model = "qamr-mbert-cased-pretrained"
+            }
+            if ($("#customradio9").is(":checked")) {
+                model = "qamr-mbert-cased-pretrained-has-answer"
+            }
+<!--            if ($("#customradio9").is(":checked")) {-->
+<!--                model = "qamr-mbert-cased-pretrained-has-answer-1"-->
+<!--            }-->
+
+<!--            document.getElementById("loader-main").style.visibility = "visible";-->
+
+<!--            location.href = "/lg4005/" +encodeURIComponent(A) + "/" + encodeURIComponent(B) + "/" + alg + "/" + model;-->
+            location.href = "/" +encodeURIComponent(A) + "/" + encodeURIComponent(B) + "/" + alg + "/" + model;
+<!--            location.href = "/" + alg + "/"  + model;-->
+        }
+    });
+
+<!--    function error() {-->
+<!--        console.log("an error happened ... ");-->
+<!--        document.getElementById("loader-main").style.visibility = "hidden";-->
+<!--    }-->
+
+<!--    document.getElementById("loader-main").style.visibility = "hidden";-->
+
+</script>
+
+<style>
+    ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        background-color: rgba(0, 0, 0, .5);
+        -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+    }
+</style>
+
+</body>
+
+</html>
